@@ -97,3 +97,138 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     }
   });
 });
+
+// BMI Calculator
+const calculateBMI = () => {
+    const weight = parseFloat(document.getElementById('weight').value);
+    const height = parseFloat(document.getElementById('height').value) / 100; // Convert cm to m
+    const bmiValue = document.getElementById('bmi-value');
+    const bmiCategory = document.getElementById('bmi-category');
+
+    if (weight && height) {
+        const bmi = (weight / (height * height)).toFixed(1);
+        bmiValue.textContent = bmi;
+
+        if (bmi < 18.5) bmiCategory.textContent = 'Underweight';
+        else if (bmi < 25) bmiCategory.textContent = 'Normal';
+        else if (bmi < 30) bmiCategory.textContent = 'Overweight';
+        else bmiCategory.textContent = 'Obese';
+    }
+};
+
+document.getElementById('calculate-bmi').addEventListener('click', calculateBMI);
+
+// Daily Health Challenge
+const challenges = [
+    "Drink 8 glasses of water today",
+    "Walk 10,000 steps",
+    "Do 20 minutes of stretching",
+    "Eat 5 servings of fruits and vegetables",
+    "Get 8 hours of sleep tonight",
+    "Take a 15-minute meditation break",
+    "Do 30 jumping jacks",
+    "Take the stairs instead of the elevator",
+    "Have a sugar-free day",
+    "Practice good posture for the entire day"
+];
+
+const setDailyChallenge = () => {
+    const today = new Date().toDateString();
+    const savedChallenge = localStorage.getItem('dailyChallenge');
+    const savedDate = localStorage.getItem('challengeDate');
+
+    if (savedDate !== today) {
+        const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+        document.getElementById('challenge-text').textContent = randomChallenge;
+        localStorage.setItem('dailyChallenge', randomChallenge);
+        localStorage.setItem('challengeDate', today);
+    } else if (savedChallenge) {
+        document.getElementById('challenge-text').textContent = savedChallenge;
+    }
+};
+
+document.getElementById('new-challenge').addEventListener('click', () => {
+    const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+    document.getElementById('challenge-text').textContent = randomChallenge;
+    localStorage.setItem('dailyChallenge', randomChallenge);
+    localStorage.setItem('challengeDate', new Date().toDateString());
+});
+
+// Medicine Reminder
+const reminders = JSON.parse(localStorage.getItem('medicineReminders') || '[]');
+
+const addReminder = (e) => {
+    e.preventDefault();
+    const name = document.getElementById('medicine-name').value;
+    const time = document.getElementById('medicine-time').value;
+
+    if (name && time) {
+        const reminder = { id: Date.now(), name, time };
+        reminders.push(reminder);
+        localStorage.setItem('medicineReminders', JSON.stringify(reminders));
+        displayReminders();
+        e.target.reset();
+    }
+};
+
+const deleteReminder = (id) => {
+    const index = reminders.findIndex(r => r.id === id);
+    if (index !== -1) {
+        reminders.splice(index, 1);
+        localStorage.setItem('medicineReminders', JSON.stringify(reminders));
+        displayReminders();
+    }
+};
+
+const displayReminders = () => {
+    const list = document.getElementById('reminders-list');
+    list.innerHTML = '';
+
+    reminders.sort((a, b) => a.time.localeCompare(b.time)).forEach(reminder => {
+        const div = document.createElement('div');
+        div.className = 'reminder-item';
+        div.innerHTML = `
+            <div>
+                <strong>${reminder.name}</strong>
+                <span>${reminder.time}</span>
+            </div>
+            <button onclick="deleteReminder(${reminder.id})">Delete</button>
+        `;
+        list.appendChild(div);
+    });
+};
+
+document.getElementById('medicine-form').addEventListener('submit', addReminder);
+
+// Interactive Body Map
+const bodyPartDiseases = {
+    head: ['Migraine', 'Tension Headache', 'Sinusitis'],
+    chest: ['Asthma', 'Bronchitis', 'Heart Disease'],
+    abdomen: ['Gastritis', 'Appendicitis', 'IBS'],
+    arms: ['Carpal Tunnel', 'Tennis Elbow', 'Arthritis'],
+    legs: ['Varicose Veins', 'Knee Arthritis', 'Sciatica']
+};
+
+const showDiseases = (part) => {
+    const diseasesList = document.getElementById('diseases-list');
+    const diseases = bodyPartDiseases[part];
+
+    if (diseases) {
+        diseasesList.innerHTML = diseases.map(disease =>
+            `<div class="disease-item">
+                <h4>${disease}</h4>
+            </div>`
+        ).join('');
+    }
+};
+
+document.querySelectorAll('.body-part').forEach(part => {
+    part.addEventListener('click', (e) => {
+        const partName = e.target.getAttribute('data-part');
+        showDiseases(partName);
+    });
+});
+
+// Initialize features
+setDailyChallenge();
+displayReminders();
